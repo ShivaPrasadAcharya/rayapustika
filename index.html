@@ -52,6 +52,9 @@
     <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14 M5 12h14"/></symbol>
     <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12 M18 6 6 18"/></symbol>
     <symbol id="i-sort" viewBox="0 0 24 24"><path d="m8 8 4-4 4 4 M12 4v16 m-4-4 4 4 4-4"/></symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 20V4 M5 11l7-7 7 7"/></symbol>
+    <symbol id="i-expand" viewBox="0 0 24 24"><path d="M8 3H3v5 M16 3h5v5 M3 16v5h5 M21 16v5h-5"/></symbol>
+    <symbol id="i-collapse" viewBox="0 0 24 24"><path d="M3 8h5V3 M21 8h-5V3 M8 21v-5H3 M16 21v-5h5"/></symbol>
   </defs></svg>
   <header class="header">
     <div class="brand"><span class="brand-mark"><svg><use href="#i-book"/></svg></span><div><h1>Rayapustika</h1><p>File catalogue</p></div></div>
@@ -90,7 +93,8 @@
       <noscript><p class="noscript">Enable JavaScript to browse and search this catalogue. You can also access the files through the GitHub repository.</p></noscript>
     </main>
   </div>
-  <dialog id="preview"><div class="preview-header"><div><h2 id="preview-title"></h2><p id="preview-note"></p></div><div class="preview-actions"><a id="preview-download" class="button secondary" download><svg><use href="#i-download"/></svg>Download</a><button id="preview-close" class="button secondary" aria-label="Close preview"><svg><use href="#i-close"/></svg></button></div></div><div id="preview-content"></div></dialog>
+  <button id="go-top" class="go-top" type="button" aria-label="Go to top" title="Go to top" hidden><svg aria-hidden="true"><use href="#i-up"/></svg></button>
+  <dialog id="preview"><div id="preview-shell"><div class="preview-header"><div><h2 id="preview-title"></h2><p id="preview-note"></p></div><div class="preview-actions"><button id="preview-fullscreen" class="button secondary" type="button" aria-label="Enter fullscreen" aria-pressed="false" title="Enter fullscreen"><svg aria-hidden="true"><use href="#i-expand"/></svg><span>Full screen</span></button><a id="preview-download" class="button secondary" download><svg><use href="#i-download"/></svg>Download</a><button id="preview-close" class="button secondary" aria-label="Close preview"><svg><use href="#i-close"/></svg></button></div></div><div id="preview-content"></div></div></dialog>
   </div>
 </body>
 </html>
