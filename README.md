@@ -16,7 +16,7 @@ Files live beside `index.html` inside the `Files` folder:
 
 Open the relevant folder in this repository, choose **Add file → Upload files**, drag in the files, then choose **Commit changes**. Files can have Nepali names, spaces and nested subfolders. Every commit to `main` automatically rebuilds the catalogue and publishes the public site through GitHub Pages. Wait for the **Publish Rayapustika** workflow to complete, then refresh the page.
 
-For your Windows folder `C:\Users\User\Downloads\filefolder`, place its files in the five matching folders above before uploading. Alternatively, attach the folder as a ZIP in ChatGPT for help importing it. No files from that Windows folder have been uploaded in the initial release.
+For your Windows folder `C:\Users\User\Downloads\filefolder`, place its files in the five matching folders above before uploading. Alternatively, attach the folder as a ZIP in ChatGPT for help importing it. The uploaded `filefolder.zip` collection has been imported: 15 PDFs in `Files/pdf` and one PNG in `Files/images`, with the original filenames preserved. The documents, spreadsheet and presentation folders are ready for future files.
 
 ## Remarks and custom link text
 
