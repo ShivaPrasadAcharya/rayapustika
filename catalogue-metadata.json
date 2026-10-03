@@ -1,1 +1,7 @@
-{}
+{
+  "Files/pdf/20830525.pdf": {
+    "remarks": "just testing the file where to put input for getting remark",
+    "openText": "test file PDF",
+    "downloadText": "do not Download PDF"
+  }
+}
