@@ -40,6 +40,12 @@ Choose a folder, search names and remarks, or use **Advanced search** for all wo
 
 PDFs and supported images open in a preview dialog. DOC/DOCX, XLS/XLSX and PPT/PPTX open in the Microsoft Office web viewer when the site is online; those previews require a publicly reachable file and may depend on the viewer's format/size limits. Other formats open the original file and may download according to browser support. Every file has a direct download link.
 
+## Browser access screen
+
+The catalogue opens after entering mobile number `9849667879`, followed by the four-digit code `1234`. This is a local two-step access screen; it does not send SMS. Access is remembered in the same browser for a fixed six hours from verification. Reopening within one hour reuses that session; closing the page for an hour or longer requires both steps again. Backgrounding an open tab does not count as closing it. Clearing browser storage or using another browser requires verification again.
+
+This screen is not server authentication. The repository, source credentials and direct file URLs remain public. Browser lifecycle events and a heartbeat track closure; if a browser forcibly exits without delivering a close event, the last heartbeat is used. When browser storage is unavailable, access lasts only in the current page.
+
 ## Local use
 
 Run `python scripts/build-index.py` after changing files, then open `index.html`, or run `python -m http.server 8000`. Static browsers cannot enumerate a folder themselves; the generator builds the catalogue from the actual files. GitHub Pages runs it automatically for online use.
