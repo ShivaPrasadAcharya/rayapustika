@@ -13,6 +13,70 @@
   const folderKeys = new Set(folders.slice(1).map(f => f.key));
   const data = window.RAYA_INDEX || {files:[], generatedAt:null};
   const clean = value => String(value ?? '').normalize('NFKC').toLocaleLowerCase().replace(/\s+/g,' ').trim();
+  // Nepali character mappings supplied for optional, space-insensitive search.
+  const NepaliNormalizer = {
+    vowelMap: {'ी':'ि', 'ू':'ु', 'ृ':'ि', 'ऋ':'रि'},
+    sibilantMap: {'श':'स', 'ष':'स'},
+    nasalMap: {'ङ':'न', 'ण':'न', 'ञ':'न', 'ं':'न्'},
+    vaBaMap: {'व':'ब'},
+    numberMap: {'०':'0','१':'1','२':'2','३':'3','४':'4','५':'5','६':'6','७':'7','८':'8','९':'9'},
+    _isDropped(ch, ignoreSpaces) {
+      if (ch === '\u200D' || ch === '\u200C') return true;
+      if (ignoreSpaces && /\s/.test(ch)) return true;
+      return false;
+    },
+    _transformChar(ch) {
+      let s = ch;
+      for (const [f,t] of Object.entries(this.vowelMap)) if (s === f) s = t;
+      for (const [f,t] of Object.entries(this.sibilantMap)) if (s === f) s = t;
+      for (const [f,t] of Object.entries(this.nasalMap)) if (s === f) s = t;
+      for (const [f,t] of Object.entries(this.vaBaMap)) if (s === f) s = t;
+      for (const [f,t] of Object.entries(this.numberMap)) if (s === f) s = t;
+      return s;
+    },
+    normalize(text, opts = {}) {
+      if (!text) return '';
+      return this._normalizeWithMap(text, opts).text;
+    },
+    _normalizeWithMap(text, opts = {}) {
+      const ignoreSpaces = !!opts.ignoreSpaces;
+      const src = text.normalize('NFC');
+      let out = '';
+      const indexMap = [];
+      for (let i = 0; i < src.length; i++) {
+        const ch = src[i];
+        if (this._isDropped(ch, ignoreSpaces)) continue;
+        const mapped = this._transformChar(ch);
+        for (const outCh of mapped) {out += outCh; indexMap.push(i);}
+      }
+      return {text:out, indexMap};
+    },
+    isDevanagari(text) {return /[\u0900-\u097F]/.test(text);},
+    mapToOriginal(normPos, original, normalized, opts = {}) {
+      const {indexMap} = this._normalizeWithMap(original, opts);
+      if (normPos <= 0) return 0;
+      if (normPos >= indexMap.length) return original.length;
+      return indexMap[normPos];
+    },
+    search(query, text) {
+      if (!query || !text) return [];
+      const normQuery = this._normalizeWithMap(query, {ignoreSpaces:true}).text;
+      const {text:normText, indexMap} = this._normalizeWithMap(text, {ignoreSpaces:true});
+      if (!normQuery) return [];
+      const matches = [];
+      let fromIndex = 0;
+      while (fromIndex <= normText.length) {
+        const idx = normText.indexOf(normQuery, fromIndex);
+        if (idx === -1) break;
+        const startOrig = indexMap[idx];
+        const endOrig = indexMap[idx + normQuery.length - 1] + 1;
+        matches.push({start:startOrig, end:endOrig});
+        fromIndex = idx + 1;
+      }
+      return matches;
+    },
+    matches(query, text) {return this.search(query, text).length > 0;}
+  };
   const collator = new Intl.Collator(undefined, {numeric:true, sensitivity:'base'});
   const files = (Array.isArray(data.files) ? data.files : []).filter(f => {
     if (!f || typeof f.path !== 'string' || !f.path.startsWith('Files/')) return false;
@@ -52,18 +116,21 @@
   const extensions = [...new Set([...standardExtensions, ...files.map(f=>f.extension)])].sort();
   for (const ext of extensions) {$('extension').append(new Option(ext.toUpperCase(), ext));}
   function getFiltered() {
-    const query = clean($('search').value), queryTokens = tokens(query), mode = $('match-mode').value;
+    const normalized = $('nepali-normalized')?.checked ?? true;
+    const searchText = value => normalized ? NepaliNormalizer.normalize(clean(value), {ignoreSpaces:true}) : clean(value);
+    // Split words before removing spaces so All words and Any word keep their meaning.
+    const query = searchText($('search').value), queryTokens = tokens($('search').value).map(searchText).filter(Boolean), mode = $('match-mode').value;
     const field = $('search-field').value, ext = $('extension').value;
-    const name = clean($('name-filter').value), remarks = clean($('remarks-filter').value), excluded = tokens($('exclude-filter').value);
+    const name = searchText($('name-filter').value), remarks = searchText($('remarks-filter').value), excluded = tokens($('exclude-filter').value).map(searchText).filter(Boolean);
     const result = files.filter(file => {
       if (state.folder !== 'all' && file.folder !== state.folder) return false;
       if (ext && file.extension !== ext) return false;
-      if (name && !clean(file.name).includes(name)) return false;
-      if (remarks && !clean(file.remarks).includes(remarks)) return false;
+      if (name && !searchText(file.name).includes(name)) return false;
+      if (remarks && !searchText(file.remarks).includes(remarks)) return false;
       if ($('has-remarks').checked && !file.remarks.trim()) return false;
-      const full = clean(`${file.name} ${file.folder} ${folders.find(f=>f.key===file.folder).label} ${file.remarks}`);
+      const full = searchText(`${file.name} ${file.folder} ${folders.find(f=>f.key===file.folder).label} ${file.remarks}`);
       if (excluded.some(word=>full.includes(word))) return false;
-      const haystack = field === 'all' ? full : field === 'folder' ? clean(`${file.folder} ${folders.find(f=>f.key===file.folder).label}`) : clean(file[field]);
+      const haystack = field === 'all' ? full : field === 'folder' ? searchText(`${file.folder} ${folders.find(f=>f.key===file.folder).label}`) : searchText(file[field]);
       if (!query) return true;
       if (mode === 'phrase') return haystack.includes(query.replace(/^"|"$/g,''));
       return mode === 'any' ? queryTokens.some(word=>haystack.includes(word)) : queryTokens.every(word=>haystack.includes(word));
@@ -188,7 +255,7 @@
   });
   $('preview').addEventListener('click',e=>{if(e.target===$('preview')){const r=$('preview').getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)$('preview').close();}});
   $('advanced-toggle').addEventListener('click',()=>{const open=$('advanced').hidden;$('advanced').hidden=!open;$('advanced-toggle').setAttribute('aria-expanded',String(open));});
-  let timer; for(const id of ['search',...advancedIds]){$(id).addEventListener($(id).tagName==='SELECT'||$(id).type==='checkbox'?'change':'input',()=>{clearTimeout(timer);timer=setTimeout(()=>{state.page=1;render();},100);});}
+  let timer; for(const id of ['search','nepali-normalized',...advancedIds]){const control=$(id);control?.addEventListener(control.tagName==='SELECT'||control.type==='checkbox'?'change':'input',()=>{clearTimeout(timer);timer=setTimeout(()=>{state.page=1;render();},100);});}
   $('reset-advanced').addEventListener('click',resetAdvanced);$('clear-all').addEventListener('click',resetAll);$('empty-reset').addEventListener('click',resetAll);
   $('sort').addEventListener('change',()=>{state.page=1;render();});
   $('sort-folder').addEventListener('click',()=>{$('sort').value='folder-asc';state.page=1;render();});
