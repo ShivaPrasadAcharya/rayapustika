@@ -124,17 +124,68 @@
   }
   function resetAdvanced() {for(const id of advancedIds){if($(id).type==='checkbox')$(id).checked=defaults[id];else $(id).value=defaults[id];}state.page=1;render();}
   function resetAll() {$('search').value='';state.folder='all';resetAdvanced();folderNavigation();$('search').focus();}
+  function updateTopButton() {if($('go-top'))$('go-top').hidden=window.scrollY<300 || $('preview').open;}
+  window.addEventListener('scroll',updateTopButton,{passive:true});
+  $('go-top')?.addEventListener('click',()=>{
+    const reducedMotion=window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({top:0,behavior:reducedMotion?'auto':'smooth'});
+  });
+  updateTopButton();
+  let nativePreviewFullscreen=false;
+  function previewIsFullscreen() {return !!$('preview-shell') && document.fullscreenElement===$('preview-shell');}
+  function setPreviewExpanded(expanded) {
+    if(!$('preview-fullscreen'))return;
+    $('preview').classList.toggle('preview-expanded',expanded);
+    const button=$('preview-fullscreen'),label=expanded?'Exit fullscreen':'Enter fullscreen';
+    button.setAttribute('aria-pressed',String(expanded));button.setAttribute('aria-label',label);button.title=label;
+    button.querySelector('use').setAttribute('href',expanded?'#i-collapse':'#i-expand');
+    button.querySelector('span').textContent=expanded?'Exit full screen':'Full screen';
+  }
+  $('preview-fullscreen')?.addEventListener('click',async()=>{
+    const dialog=$('preview'),shell=$('preview-shell'),button=$('preview-fullscreen');
+    if(!dialog.open)return;
+    button.disabled=true;
+    try {
+      if(dialog.classList.contains('preview-expanded')) {
+        if(document.fullscreenElement===shell && document.exitFullscreen)await document.exitFullscreen();
+        setPreviewExpanded(document.fullscreenElement===shell);
+      } else {
+        setPreviewExpanded(true);
+        // Keep a full-window view when the browser cannot enter native fullscreen.
+        if(shell.requestFullscreen && document.fullscreenEnabled) {
+          try {await shell.requestFullscreen();}catch {/* The full-window view remains available. */}
+        }
+        if(!dialog.open && document.fullscreenElement===shell && document.exitFullscreen)await document.exitFullscreen();
+        if(!dialog.open)setPreviewExpanded(false);
+      }
+    } catch {/* A browser-controlled fullscreen exit can be retried with Escape. */}
+    finally {button.disabled=false;}
+  });
+  document.addEventListener('fullscreenchange',()=>{
+    const active=previewIsFullscreen();
+    if(active || nativePreviewFullscreen)setPreviewExpanded(active);
+    nativePreviewFullscreen=active;
+  });
+  $('preview').addEventListener('cancel',event=>{
+    if(!$('preview').classList.contains('preview-expanded'))return;
+    event.preventDefault();
+    if(previewIsFullscreen() && document.exitFullscreen)document.exitFullscreen().catch(()=>{});
+    else setPreviewExpanded(false);
+  });
   function preview(file) {
-    const dialog=$('preview');$('preview-title').textContent=file.name;
+    const dialog=$('preview');setPreviewExpanded(false);$('preview-title').textContent=file.name;
     $('preview-note').textContent=file.extension==='pdf'?'PDF preview · If a preview is unavailable, use Download.':'Image preview';
     $('preview-download').href=fileUrl(file);$('preview-download').download=file.name;
     const content=$('preview-content');content.replaceChildren();
     if(file.extension==='pdf'){const frame=document.createElement('iframe');frame.title=`PDF preview: ${file.name}`;frame.src=fileUrl(file);content.append(frame);}
     else {const img=document.createElement('img');img.alt=file.name;img.src=fileUrl(file);img.addEventListener('error',()=>{content.replaceChildren(element('p','preview-fallback','Preview unavailable. Use Download to save the file.'));},{once:true});content.append(img);}
-    dialog.showModal();$('preview-close').focus();
+    dialog.showModal();$('preview-close').focus();updateTopButton();
   }
   $('preview-close').addEventListener('click',()=>$('preview').close());
-  $('preview').addEventListener('close',()=>{$('preview-content').replaceChildren();});
+  $('preview').addEventListener('close',()=>{
+    if(previewIsFullscreen() && document.exitFullscreen)document.exitFullscreen().catch(()=>{});
+    setPreviewExpanded(false);$('preview-content').replaceChildren();updateTopButton();
+  });
   $('preview').addEventListener('click',e=>{if(e.target===$('preview')){const r=$('preview').getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)$('preview').close();}});
   $('advanced-toggle').addEventListener('click',()=>{const open=$('advanced').hidden;$('advanced').hidden=!open;$('advanced-toggle').setAttribute('aria-expanded',String(open));});
   let timer; for(const id of ['search',...advancedIds]){$(id).addEventListener($(id).tagName==='SELECT'||$(id).type==='checkbox'?'change':'input',()=>{clearTimeout(timer);timer=setTimeout(()=>{state.page=1;render();},100);});}
