@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#2459d3">
+  <meta name="description" content="Browse, search, open and download files from Rayapustika.">
+  <title>Rayapustika · File catalogue</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="files-index.js" defer></script>
+  <script src="assets/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#catalogue">Skip to files</a>
+  <svg class="icon-defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 4h6a3 3 0 0 1 3 3v14a4 4 0 0 0-4-2H4V4Zm9 3a3 3 0 0 1 3-3h5v15h-4a4 4 0 0 0-4 2"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7V5h6l2 2h10v13H3V7Z"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6V3Z M14 3v5h4 M9 12h6 M9 16h6"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8" cy="8" r="1.5"/><path d="m3 17 6-6 4 4 3-3 5 5"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18 M3 15h18 M9 3v18 M15 3v18"/></symbol>
+    <symbol id="i-slides" viewBox="0 0 24 24"><path d="M3 4h18 M4 4v13h16V4 M12 17v4 M8 21h8 M8 8h8 M8 12h5"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12 M7 10l5 5 5-5 M4 16v5h16v-5"/></symbol>
+    <symbol id="i-filter" viewBox="0 0 24 24"><path d="M4 6h16 M4 12h16 M4 18h16"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="9" cy="18" r="2"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14 M5 12h14"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12 M18 6 6 18"/></symbol>
+    <symbol id="i-sort" viewBox="0 0 24 24"><path d="m8 8 4-4 4 4 M12 4v16 m-4-4 4 4 4-4"/></symbol>
+  </defs></svg>
+  <header class="header">
+    <div class="brand"><span class="brand-mark"><svg><use href="#i-book"/></svg></span><div><h1>Rayapustika</h1><p>File catalogue</p></div></div>
+    <a id="add-files" class="button primary" href="https://github.com/ShivaPrasadAcharya/rayapustika" target="_blank" rel="noopener noreferrer"><svg><use href="#i-plus"/></svg>Add files</a>
+  </header>
+  <div class="workspace">
+    <aside class="sidebar" aria-label="Filter by folder">
+      <div class="section-label">FOLDERS</div>
+      <nav id="folders" class="folder-list"></nav>
+      <div class="folder-note"><svg><use href="#i-folder"/></svg><span>Files are organised in five folders.</span></div>
+    </aside>
+    <main id="catalogue">
+      <div class="heading-row"><div><h2 id="view-title">All files</h2><p id="view-description">PDFs, images, documents, spreadsheets and presentations.</p></div><span id="total-pill" class="total-pill">0 files</span></div>
+      <section class="search-card" aria-label="Search and filters">
+        <div class="search-row"><div class="search-box"><svg><use href="#i-search"/></svg><label class="sr-only" for="search">Search files</label><input id="search" type="search" placeholder="Search file names, folders or remarks…" autocomplete="off"><kbd>/</kbd></div><button id="advanced-toggle" class="button secondary" aria-expanded="false" aria-controls="advanced"><svg><use href="#i-filter"/></svg>Advanced search<span id="filter-count" class="filter-count" hidden>0</span></button></div>
+        <div id="advanced" class="advanced" hidden>
+          <div class="advanced-grid">
+            <label>Search matching<select id="match-mode"><option value="all">All words</option><option value="any">Any word</option><option value="phrase">Exact phrase</option></select></label>
+            <label>Search in<select id="search-field"><option value="all">All fields</option><option value="name">File name</option><option value="folder">Folder name</option><option value="remarks">Remarks</option></select></label>
+            <label>File type<select id="extension"><option value="">Any file type</option></select></label>
+            <label>File name contains<input id="name-filter" placeholder="e.g. judgement" autocomplete="off"></label>
+            <label>Remarks contains<input id="remarks-filter" placeholder="e.g. evidence law" autocomplete="off"></label>
+            <label>Exclude words<input id="exclude-filter" placeholder="e.g. draft, old" autocomplete="off"></label>
+          </div>
+          <div class="advanced-bottom"><label class="check-label"><input id="has-remarks" type="checkbox">Only files with remarks</label><button id="reset-advanced" class="text-button">Reset advanced filters</button></div>
+          <p class="search-help">Search covers the catalogue’s names and remarks. It does not search inside file contents.</p>
+        </div>
+      </section>
+      <div class="results-toolbar"><p id="result-summary" role="status" aria-live="polite">Loading catalogue…</p><div class="results-controls"><button id="clear-all" class="text-button" hidden>Clear filters</button><label for="sort" class="sr-only">Sort files</label><select id="sort"><option value="name-asc">File name: A–Z</option><option value="name-desc">File name: Z–A</option><option value="folder-asc">Folder: A–Z</option></select></div></div>
+      <section class="table-card" aria-label="File catalogue">
+        <table><colgroup><col class="col-sn"><col class="col-folder"><col class="col-name"><col class="col-link"><col class="col-remarks"></colgroup><thead><tr><th scope="col">SN</th><th scope="col"><button id="sort-folder">Folder name<svg><use href="#i-sort"/></svg></button></th><th scope="col"><button id="sort-name">File name<svg><use href="#i-sort"/></svg></button></th><th scope="col">Link</th><th scope="col">Remarks</th></tr></thead><tbody id="file-rows"></tbody></table>
+        <div id="empty-state" class="empty-state" hidden><span class="empty-icon"><svg><use href="#i-folder"/></svg></span><h3 id="empty-title">No files added yet</h3><p id="empty-description">Add your files to the folders to start your catalogue.</p><button id="empty-reset" class="button secondary" hidden>Clear filters</button></div>
+        <footer class="table-footer"><span id="page-summary">0 files</span><div class="pagination"><label for="page-size">Rows per page</label><select id="page-size"><option>25</option><option>50</option><option>100</option></select><button id="previous" class="button page-button" disabled>Previous</button><button id="next" class="button page-button" disabled>Next</button></div></footer>
+      </section>
+      <div class="catalogue-footer"><span id="updated-at"></span><span>Open to view · Download to save</span></div>
+      <noscript><p class="noscript">Enable JavaScript to browse and search this catalogue. You can also access the files through the GitHub repository.</p></noscript>
+    </main>
+  </div>
+  <dialog id="preview"><div class="preview-header"><div><h2 id="preview-title"></h2><p id="preview-note"></p></div><div class="preview-actions"><a id="preview-download" class="button secondary" download><svg><use href="#i-download"/></svg>Download</a><button id="preview-close" class="button secondary" aria-label="Close preview"><svg><use href="#i-close"/></svg></button></div></div><div id="preview-content"></div></dialog>
+</body>
+</html>
