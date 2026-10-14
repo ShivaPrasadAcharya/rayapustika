@@ -83,54 +83,54 @@ window.RAYA_INDEX = {
       "remarks": ""
     },
     {
-      "path": "Files/pdf/cover10.20830421.pdf",
+      "path": "Files/pdf/dn10.20830421.cover.pdf",
       "folder": "pdf",
-      "name": "cover10.20830421.pdf",
+      "name": "dn10.20830421.cover.pdf",
       "extension": "pdf",
       "size": 735134,
       "updatedAt": "2026-10-03T05:30:53.479176+00:00",
       "remarks": ""
     },
     {
-      "path": "Files/pdf/cover39.pdf",
+      "path": "Files/pdf/dn39.cover.pdf",
       "folder": "pdf",
-      "name": "cover39.pdf",
+      "name": "dn39.cover.pdf",
       "extension": "pdf",
       "size": 498700,
       "updatedAt": "2026-10-03T05:30:53.483431+00:00",
       "remarks": ""
     },
     {
-      "path": "Files/pdf/cover40.20830503.pdf",
+      "path": "Files/pdf/dn40.20830503.cover.pdf",
       "folder": "pdf",
-      "name": "cover40.20830503.pdf",
+      "name": "dn40.20830503.cover.pdf",
       "extension": "pdf",
       "size": 6432427,
       "updatedAt": "2026-10-03T05:30:53.506711+00:00",
       "remarks": ""
     },
     {
-      "path": "Files/pdf/cover53.20830518.pdf",
+      "path": "Files/pdf/dn53.20830518.cover.pdf",
       "folder": "pdf",
-      "name": "cover53.20830518.pdf",
+      "name": "dn53.20830518.cover.pdf",
       "extension": "pdf",
       "size": 5191168,
       "updatedAt": "2026-10-03T05:30:53.528744+00:00",
       "remarks": ""
     },
     {
-      "path": "Files/pdf/cover66.20830601.pdf",
+      "path": "Files/pdf/dn66.20830601.cover.pdf",
       "folder": "pdf",
-      "name": "cover66.20830601.pdf",
+      "name": "dn66.20830601.cover.pdf",
       "extension": "pdf",
       "size": 4419889,
       "updatedAt": "2026-10-03T05:30:53.543422+00:00",
       "remarks": ""
     },
     {
-      "path": "Files/pdf/cover68.20830601.pdf",
+      "path": "Files/pdf/dn68.20830601.cover.pdf",
       "folder": "pdf",
-      "name": "cover68.20830601.pdf",
+      "name": "dn68.20830601.cover.pdf",
       "extension": "pdf",
       "size": 634347,
       "updatedAt": "2026-10-03T05:30:53.549314+00:00",
