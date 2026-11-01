@@ -1,0 +1,27 @@
+name: Restore deleted Files directory
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/restore-files.yml]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+      - name: Restore and verify original Files tree
+        run: |
+          set -eu
+          test ! -d Files
+          git restore --source=3ed1e57f2aa87a300c1949c80a4073ae0d91a929 --staged --worktree -- Files
+          tree=$(git write-tree)
+          test "$(git rev-parse "$tree:Files")" = "5563583ee7a77bf78dcd00873974fd7eff5ebd70"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Restore Files directory from 3ed1e57"
+          git push origin HEAD:main
