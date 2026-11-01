@@ -19,7 +19,7 @@ window.RAYA_INDEX = {
       "extension": "pdf",
       "size": 5533525,
       "updatedAt": "2026-10-14T07:28:06.647424+00:00",
-      "remarks": ""
+      "remarks": "decision number?"
     },
     {
       "path": "Files/pdf/dn.20830504.raya.pdf",
@@ -28,7 +28,7 @@ window.RAYA_INDEX = {
       "extension": "pdf",
       "size": 5185101,
       "updatedAt": "2026-10-17T06:05:55.243034+00:00",
-      "remarks": ""
+      "remarks": "decision number??"
     },
     {
       "path": "Files/pdf/dn01-02.20830414.raya.pdf",
@@ -37,7 +37,7 @@ window.RAYA_INDEX = {
       "extension": "pdf",
       "size": 5076815,
       "updatedAt": "2026-10-14T07:28:06.664423+00:00",
-      "remarks": ""
+      "remarks": "no remark-just experimenting"
     },
     {
       "path": "Files/pdf/dn03-04.05.20830420.raya.pdf",
