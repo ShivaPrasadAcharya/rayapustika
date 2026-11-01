@@ -22,3 +22,4 @@
 #preview-shell #preview-content{flex:1;min-height:0;height:auto}
 .preview-header>div:first-child{min-width:0}
 @media(max-width:620px){.search-card{top:8px;max-height:calc(100vh - 16px);max-height:calc(100dvh - 16px)}.go-top,.go-bottom{right:16px;width:44px;height:44px}.go-top{bottom:calc(max(16px,env(safe-area-inset-bottom)) + 54px)}.go-bottom{bottom:max(16px,env(safe-area-inset-bottom))}.preview-actions #preview-fullscreen span{display:none}.preview-actions #preview-fullscreen{gap:0}}
+#file-rows>tr:nth-child(even){background-color:#f6f8fc}
