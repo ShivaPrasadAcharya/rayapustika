@@ -17,10 +17,21 @@ SUPPORTED = {
 }
 
 def build():
-    metadata_path = ROOT / 'catalogue-metadata.json'
-    metadata = json.loads(metadata_path.read_text(encoding='utf-8')) if metadata_path.exists() else {}
-    if not isinstance(metadata, dict):
-        raise ValueError('catalogue-metadata.json must contain an object keyed by file path.')
+    index_path = ROOT / 'files-index.js'
+    existing = {}
+    if index_path.exists():
+        source = index_path.read_text(encoding='utf-8')
+        prefix = 'window.RAYA_INDEX = '
+        if not source.startswith(prefix):
+            raise ValueError('files-index.js must start with the catalogue assignment.')
+        try:
+            previous = json.loads(source[len(prefix):].strip().removesuffix(';'))
+        except json.JSONDecodeError as error:
+            raise ValueError('files-index.js must contain valid catalogue data to preserve remarks.') from error
+        if not isinstance(previous, dict) or not isinstance(previous.get('files'), list):
+            raise ValueError('files-index.js must contain a files list to preserve remarks.')
+        existing = {entry['path']: entry for entry in previous['files']
+                    if isinstance(entry, dict) and isinstance(entry.get('path'), str)}
     files = []
     for folder in FOLDERS:
         directory = ROOT / 'Files' / folder
@@ -34,9 +45,7 @@ def build():
                 print(f'Skipping unsupported file: {path.relative_to(ROOT)}', file=sys.stderr)
                 continue
             relative = path.relative_to(ROOT).as_posix()
-            extra = metadata.get(relative, {})
-            if not isinstance(extra, dict):
-                raise ValueError(f'Metadata for {relative} must be an object.')
+            extra = existing.get(relative, {})
             stat = path.stat()
             entry = {'path': relative, 'folder': folder, 'name': path.name, 'extension': ext,
                      'size': stat.st_size, 'updatedAt': datetime.fromtimestamp(stat.st_mtime, timezone.utc).isoformat(),
@@ -48,7 +57,7 @@ def build():
     index = {'generatedAt': datetime.now(timezone.utc).isoformat(), 'files': files}
     # External JavaScript works when index.html is opened locally, as well as on Pages.
     serialized = json.dumps(index, ensure_ascii=False, indent=2).replace('\u2028', '\\u2028').replace('\u2029', '\\u2029')
-    (ROOT / 'files-index.js').write_text('window.RAYA_INDEX = ' + serialized + ';\n', encoding='utf-8')
+    index_path.write_text('window.RAYA_INDEX = ' + serialized + ';\n', encoding='utf-8')
     print(f'Indexed {len(files)} files in {len(FOLDERS)} folders.')
     return index
 

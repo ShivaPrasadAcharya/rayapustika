@@ -766,7 +766,9 @@ window.RAYA_INDEX = {
       "extension": "pdf",
       "size": 2698669,
       "updatedAt": "2026-10-14T07:28:06.622424+00:00",
-      "remarks": "CRIMINAL-banking offence (cheque bounce)"
+      "remarks": "CRIMINAL-banking offence (cheque bounce)",
+      "openText": "view cover page-trial",
+      "downloadText": "download cover-just trial of catalogue-metadat.json"
     },
     {
       "path": "Files/images/Screenshot 2026-07-22 232117.png",

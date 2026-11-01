@@ -20,19 +20,18 @@ For your Windows folder `C:\Users\User\Downloads\filefolder`, place its files in
 
 ## Remarks and custom link text
 
-Edit `catalogue-metadata.json`. Use each file's exact path as a key:
+Edit the file entry in `files-index.js` directly. Set `remarks` to the text you want shown in the table:
 
 ```json
 {
-  "Files/pdf/My file.pdf": {
-    "remarks": "Evidence law notes",
-    "openText": "Open PDF",
-    "downloadText": "Download PDF"
-  }
+  "path": "Files/pdf/My file.pdf",
+  "remarks": "Evidence law notes",
+  "openText": "Open PDF",
+  "downloadText": "Download PDF"
 }
 ```
 
-The example above is documentation only. Link text is optional; defaults are **Open PDF**, **Download PDF**, **Open DOCX**, and so on. The page adds eye and download icons automatically.
+Remarks and custom link text are preserved by the index generator when files are added or updated. Link text is optional; defaults are **Open PDF**, **Download PDF**, **Open DOCX**, and so on. The page adds eye and download icons automatically.
 
 ## Browse and search
 
