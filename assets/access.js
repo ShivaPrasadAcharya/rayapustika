@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const MOBILE = '9849667879', CODE = '1234';
-  const KEY = 'rayapustika.access.v1';
+  const KEY = 'rayapustika2.access.v1';
   const SIX_HOURS = 6 * 60 * 60 * 1000, ONE_HOUR = 60 * 60 * 1000;
   const $ = id => document.getElementById(id);
   let unlocked = false, numberAccepted = false, present = true;
