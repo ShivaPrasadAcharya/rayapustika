@@ -158,25 +158,75 @@
     } else {a.title='Open original file; your browser may download this format';}
     return a;
   }
-  function row(file, index) {
+  function groupFiles(items) {
+    const groups = new Map();
+    for (const file of items) {
+      const extensionStart = file.name.lastIndexOf('.');
+      const stem = extensionStart > 0 ? file.name.slice(0, extensionStart) : file.name;
+      const separator = Math.max(stem.lastIndexOf('.'), stem.lastIndexOf('_'));
+      const name = separator > 0 ? stem.slice(0, separator) : stem;
+      const category = separator > 0 ? stem.slice(separator + 1) : '';
+      const directory = file.path.split('/').slice(2, -1).join('/');
+      const key = `${directory}\u0000${name}`;
+      if (!groups.has(key)) groups.set(key, {name, directory, files: []});
+      groups.get(key).files.push({file, category});
+    }
+    return [...groups.values()];
+  }
+  function variantLabel(entry) {
+    const extension = entry.file.extension.toUpperCase();
+    return entry.category ? `${entry.category} (${extension})` : extension;
+  }
+  function row(fileGroup, index) {
+    const entries = fileGroup.files, grouped = entries.length > 1, file = entries[0].file;
     const tr = document.createElement('tr');
     const sn = element('td','sn',String(index));
     const folderCell = element('td','folder-cell');
-    const tag = element('span','folder-tag'); tag.append(icon('folder'),document.createTextNode(file.folder)); folderCell.append(tag);
-    const nameCell = element('td','name-cell'); const group = element('div','file-name');
-    const type = element('span',`type-icon ${file.folder}`, file.extension.toUpperCase().slice(0,5)); type.setAttribute('aria-hidden','true');
-    const titleGroup = element('div');titleGroup.append(element('span','file-title',file.name));
-    const nested = file.path.split('/').slice(2,-1).join('/');
-    titleGroup.append(element('span','file-meta',[bytes(file.size),nested].filter(Boolean).join(' · ')));
-    group.append(type,titleGroup);nameCell.append(group);
-    const linkCell=element('td','link-cell'),links=element('div','file-links');links.append(link(file,'open'),link(file,'download'));linkCell.append(links);
-    const remarksCell=element('td','remarks-cell');remarksCell.append(element('span', file.remarks?'remarks':'no-remark',file.remarks||'—'));
+    const folderTags = element('div','folder-tags');
+    for (const folder of new Set(entries.map(entry => entry.file.folder))) {
+      const tag = element('span','folder-tag'); tag.append(icon('folder'),document.createTextNode(folder)); folderTags.append(tag);
+    }
+    folderCell.append(folderTags);
+    const nameCell = element('td','name-cell'); const nameGroup = element('div','file-name');
+    const types = [...new Map(entries.map(entry => [entry.file.extension, entry.file])).values()];
+    for (const typeFile of types) {
+      const type = element('span',`type-icon ${typeFile.folder}`,typeFile.extension.toUpperCase().slice(0,5));
+      type.setAttribute('aria-hidden','true'); nameGroup.append(type);
+    }
+    const titleGroup = element('div');titleGroup.append(element('span','file-title',grouped?fileGroup.name:file.name));
+    const sizes = entries.reduce((sum, entry) => sum + (Number.isFinite(entry.file.size) ? entry.file.size : 0), 0);
+    const variants = entries.map(variantLabel).join(' · ');
+    titleGroup.append(element('span','file-meta',grouped?[variants,bytes(sizes),fileGroup.directory].filter(Boolean).join(' · '):[bytes(file.size),fileGroup.directory].filter(Boolean).join(' · ')));
+    nameGroup.append(titleGroup);nameCell.append(nameGroup);
+    const linkCell=element('td','link-cell');
+    if (grouped) {
+      const linkList=element('div','file-link-list');
+      for (const entry of entries) {
+        const linkGroup=element('div','file-link-group');
+        linkGroup.append(element('span','variant-label',variantLabel(entry)));
+        const links=element('div','file-links');links.append(link(entry.file,'open'),link(entry.file,'download'));
+        linkGroup.append(links);linkList.append(linkGroup);
+      }
+      linkCell.append(linkList);
+    } else {
+      const links=element('div','file-links');links.append(link(file,'open'),link(file,'download'));linkCell.append(links);
+    }
+    const remarksCell=element('td','remarks-cell');
+    if (grouped) {
+      const remarkList=element('div','remark-list');
+      for (const entry of entries) {
+        const remarkEntry=element('div','remark-entry');
+        remarkEntry.append(element('span','remark-label',variantLabel(entry)),element('span',entry.file.remarks?'remarks':'no-remark',entry.file.remarks||'—'));
+        remarkList.append(remarkEntry);
+      }
+      remarksCell.append(remarkList);
+    } else remarksCell.append(element('span',file.remarks?'remarks':'no-remark',file.remarks||'—'));
     tr.append(sn,folderCell,nameCell,linkCell,remarksCell);return tr;
   }
   function render() {
-    state.filtered=getFiltered();const n=state.filtered.length,size=Number($('page-size').value),pages=Math.max(1,Math.ceil(n/size));state.page=Math.min(state.page,pages);
-    const start=(state.page-1)*size,end=Math.min(start+size,n),fragment=document.createDocumentFragment();
-    for(let i=start;i<end;i++)fragment.append(row(state.filtered[i],i+1));$('file-rows').replaceChildren(fragment);
+    state.filtered=getFiltered();const n=state.filtered.length,groups=groupFiles(state.filtered),rowCount=groups.length,size=Number($('page-size').value),pages=Math.max(1,Math.ceil(rowCount/size));state.page=Math.min(state.page,pages);
+    const start=(state.page-1)*size,end=Math.min(start+size,rowCount),fragment=document.createDocumentFragment();
+    for(let i=start;i<end;i++)fragment.append(row(groups[i],i+1));$('file-rows').replaceChildren(fragment);
     const folder=folders.find(f=>f.key===state.folder);$('view-title').textContent=folder.label;
     $('view-description').textContent=state.folder==='all'?'PDFs, images, documents, spreadsheets and presentations.':`Files / ${folder.key}`;
     $('total-pill').textContent=`${files.length} ${files.length===1?'file':'files'}`;
@@ -186,18 +236,27 @@
     $('empty-state').hidden=n>0;$('empty-reset').hidden=!files.length;
     $('empty-title').textContent=files.length?'No matching files':'No files added yet';
     $('empty-description').textContent=files.length?'Try a different search or clear your filters.':'Your catalogue is ready. Add files to the PDF, images, docs, spreadsheet or powerpoints folders.';
-    $('page-summary').textContent=n?`${start+1}–${end} of ${n} · Page ${state.page} of ${pages}`:'0 files';
+    $('page-summary').textContent=rowCount?`Rows ${start+1}–${end} of ${rowCount} · Page ${state.page} of ${pages}`:'0 rows';
     $('previous').disabled=state.page<=1;$('next').disabled=state.page>=pages;
+    updateScrollButtons();
   }
   function resetAdvanced() {for(const id of advancedIds){if($(id).type==='checkbox')$(id).checked=defaults[id];else $(id).value=defaults[id];}state.page=1;render();}
   function resetAll() {$('search').value='';state.folder='all';resetAdvanced();folderNavigation();$('search').focus();}
-  function updateTopButton() {if($('go-top'))$('go-top').hidden=window.scrollY<300 || $('preview').open;}
-  window.addEventListener('scroll',updateTopButton,{passive:true});
-  $('go-top')?.addEventListener('click',()=>{
+  function updateScrollButtons() {
+    const previewOpen=$('preview').open,nearBottom=window.scrollY+window.innerHeight>=document.documentElement.scrollHeight-300;
+    $('go-top').hidden=window.scrollY<300 || previewOpen;
+    $('go-bottom').hidden=nearBottom || previewOpen;
+  }
+  function scrollToEdge(edge) {
     const reducedMotion=window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    window.scrollTo({top:0,behavior:reducedMotion?'auto':'smooth'});
-  });
-  updateTopButton();
+    window.scrollTo({top:edge==='top'?0:document.documentElement.scrollHeight,behavior:reducedMotion?'auto':'smooth'});
+  }
+  window.addEventListener('scroll',updateScrollButtons,{passive:true});
+  window.addEventListener('resize',updateScrollButtons,{passive:true});
+  new MutationObserver(updateScrollButtons).observe($('catalogue-app'),{attributes:true,attributeFilter:['hidden']});
+  $('go-top')?.addEventListener('click',()=>scrollToEdge('top'));
+  $('go-bottom')?.addEventListener('click',()=>scrollToEdge('bottom'));
+  updateScrollButtons();
   let nativePreviewFullscreen=false;
   function previewIsFullscreen() {return !!$('preview-shell') && document.fullscreenElement===$('preview-shell');}
   function setPreviewExpanded(expanded) {
@@ -246,12 +305,12 @@
     const content=$('preview-content');content.replaceChildren();
     if(file.extension==='pdf'){const frame=document.createElement('iframe');frame.title=`PDF preview: ${file.name}`;frame.src=fileUrl(file);content.append(frame);}
     else {const img=document.createElement('img');img.alt=file.name;img.src=fileUrl(file);img.addEventListener('error',()=>{content.replaceChildren(element('p','preview-fallback','Preview unavailable. Use Download to save the file.'));},{once:true});content.append(img);}
-    dialog.showModal();$('preview-close').focus();updateTopButton();
+    dialog.showModal();$('preview-close').focus();updateScrollButtons();
   }
   $('preview-close').addEventListener('click',()=>$('preview').close());
   $('preview').addEventListener('close',()=>{
     if(previewIsFullscreen() && document.exitFullscreen)document.exitFullscreen().catch(()=>{});
-    setPreviewExpanded(false);$('preview-content').replaceChildren();updateTopButton();
+    setPreviewExpanded(false);$('preview-content').replaceChildren();updateScrollButtons();
   });
   $('preview').addEventListener('click',e=>{if(e.target===$('preview')){const r=$('preview').getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)$('preview').close();}});
   $('advanced-toggle').addEventListener('click',()=>{const open=$('advanced').hidden;$('advanced').hidden=!open;$('advanced-toggle').setAttribute('aria-expanded',String(open));});
